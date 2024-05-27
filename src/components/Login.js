@@ -1,18 +1,28 @@
-import { useRef, useState, useEffect, useContext } from "react";
-import AuthContext from "./context/AuthProvider";
+import { useRef, useState, useEffect } from "react";
+import useAuth from "../hooks/useAuth";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
-import axios from "./api/axios"
+import axios from "../api/axios"
 const LOGIN_URL = "/auth";
 
 const Login = () => {
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth } = useAuth();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
+  
+
   const userRef = useRef();
   const errRef = useRef();
+
+  
 
   const [user, setUser] = useState("");
   const [pwd, setPwd] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
+  //const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     userRef.current.focus();
@@ -30,17 +40,25 @@ const Login = () => {
             JSON.stringify({user, pwd}),
             {
                 headers: { "content-Type": "application/json" },
-                //withCredentials: true
+                withCredentials: true
             }
         );
         console.log(JSON.stringify(response?.data));
         console.log(JSON.stringify(response));
         const accessToken = response?.data?.accessToken;
+        console.log(accessToken);
         const roles = response?.data?.roles;
+        
+
+        
+       
         setAuth({ user, pwd, roles, accessToken });
         setUser("");
         setPwd("");
-        setSuccess(true);
+        //setSuccess(true);
+
+        navigate(from, { replace: true });
+        
     } catch (err) {
         if(!err?.response){
             setErrMsg("No Server Response");
@@ -51,21 +69,14 @@ const Login = () => {
         } else{
             setErrMsg("Login Failed");
         }
+        
     }
+    
     
   };
 
   return (
-    <>
-      {success ? (
-        <section>
-          <h1>You are logged</h1>
-          <br />
-          <p>
-            <a href="#">Go to Home</a>
-          </p>
-        </section>
-      ) : (
+
         <section>
           <p
             ref={errRef}
@@ -91,7 +102,6 @@ const Login = () => {
             <input
               type="password"
               id="password"
-              ref={userRef}
               onChange={(e) => setPwd(e.target.value)}
               value={pwd}
               required
@@ -102,12 +112,12 @@ const Login = () => {
             Need an Account? <br />
             <span className="line">
               {/* put router link here */}
-              <a href="#">Sign Up</a>
+              <Link to={"/register"}>Sign Up</Link>
             </span>
           </p>
         </section>
-      )}
-    </>
+      
+    
   );
 };
 

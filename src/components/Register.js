@@ -5,7 +5,9 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "./api/axios";
+import axios from "../api/axios";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+
 
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
@@ -16,6 +18,12 @@ const REGISTER_URL = "/register";
 const Register = () => {
   const userRef = useRef();
   const errRef = useRef();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
+  //const navigate = useNavigate();
 
   const [user, setUser] = useState("");
   const [validName, setValidName] = useState(false);
@@ -30,7 +38,7 @@ const Register = () => {
   const [matchFocus, setMatchFocus] = useState(false);
 
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
+  //const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     userRef.current.focus();
@@ -71,15 +79,16 @@ const Register = () => {
        const response = await axios.post(REGISTER_URL, JSON.stringify({ user, pwd }), 
        {
          headers: {"Content-Type": "application/json"},
-        //withCredentials: true
+        withCredentials: true
         
        }
     );
     console.log(response.data);
     console.log(response.accessToken);
     console.log(JSON.stringify(response));
-    setSuccess(true);
+    navigate(from, { replace: true });
 
+    //navigate("/login");
     //clear input fields
     } catch (err) {
        if(!err?.response){
@@ -93,19 +102,14 @@ const Register = () => {
     }
   };
 
+ 
+
   const canSave = [validName, validPwd, validMatch].every(Boolean);
 
   return (
-    <>
     
-      {success ? (
-        <section>
-          <h1>Success!</h1>
-          <p>
-            <a href="#">Sign In</a>
-          </p>
-        </section>
-      ) : (
+    
+     
         <section>
           <p
             ref={errRef}
@@ -223,6 +227,7 @@ const Register = () => {
             >
               Sign Up
             </button>
+            
           </form>
 
           <p>
@@ -230,12 +235,11 @@ const Register = () => {
             <br />
             <span className="line">
               {/* {put router link here} */}
-              <a href="#">Sign In</a>
+               <Link to={"/login"}>Sign In</Link>
             </span>
           </p>
         </section>
-      )}
-    </>
+     
   );
 };
 
